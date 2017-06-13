@@ -187,13 +187,12 @@ BEGIN
     PUSHBUTTON      "Read Image",IDC_BUTTON_READING,353,77,92,11
     PUSHBUTTON      "Thresholding",IDC_READGRAY,355,111,92,11
     PUSHBUTTON      "Median FIlter",IDC_MedianFilter,354,94,91,12
-    PUSHBUTTON      "Centroid",IDC_CENTROID,490,112,92,14
+    PUSHBUTTON      "Centroid",IDC_CENTROID,496,109,92,14
     CONTROL         "Fixed",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON,366,153,
                     47,13
     CONTROL         "Adaptive",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,367,
                     166,49,10
     PUSHBUTTON      "SAD(Sum of absolute differnce)",IDC_SEA,488,213,102,16
-    PUSHBUTTON      "Edge",IDC_Edge,490,133,92,15
     GROUPBOX        "Type of Threshold",IDC_STATIC,359,142,75,49
     GROUPBOX        "Tracking Mode",IDC_STATIC,481,98,114,151
     PUSHBUTTON      "Top",IDC_TOP,531,154,18,12
@@ -202,9 +201,9 @@ BEGIN
     PUSHBUTTON      "Right",IDC_RIGHT,564,169,21,12
     GROUPBOX        "Types Of Edge Detection",IDC_STATIC,355,201,110,71
     PUSHBUTTON      "Prewitt",IDC_PREWITT,371,230,77,15
-    PUSHBUTTON      "Robert",IDC_BUTTON9,371,250,77,15
+    PUSHBUTTON      "Robert",IDC_ROBERT,371,250,77,15
     PUSHBUTTON      "Sobel",IDC_SOBEL,371,214,78,13
-    PUSHBUTTON      "Corelation",IDC_CORELATION,359,281,102,12
+    PUSHBUTTON      "EDGE",IDC_EDGE,503,137,77,10
 END
 
 

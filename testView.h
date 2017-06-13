@@ -29,9 +29,9 @@ public:
 // Operations
 public:
 	CBitmap cmp,cmp1;
-	BITMAP bm;
+	BITMAP bm,bm1;
 	PBYTE imagearray;
-	PBYTE temp,temp1,temp2,temp3,temp4;
+	PBYTE temp,temp1,temp3,temp4;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
