@@ -15,8 +15,8 @@ Class3=CTestView
 Class4=CMainFrame
 
 ResourceCount=7
-Resource1=IDR_MAINFRAME
-Resource2=IDD_ABOUTBOX
+Resource1=IDD_ABOUTBOX
+Resource2=IDR_MAINFRAME
 Class5=CAboutDlg
 Resource7=IDD_TEST_FORM
 
@@ -39,7 +39,7 @@ ImplementationFile=testView.cpp
 Filter=D
 BaseClass=CFormView
 VirtualFilter=VWC
-LastObject=IDC_CORELATION
+LastObject=IDC_SEA
 
 
 [CLS:CMainFrame]
@@ -109,7 +109,7 @@ CommandCount=14
 [DLG:IDD_TEST_FORM]
 Type=1
 Class=CTestView
-ControlCount=19
+ControlCount=18
 Control1=IDC_BUTTON_READING,button,1342242816
 Control2=IDC_READGRAY,button,1342242816
 Control3=IDC_MedianFilter,button,1342242816
@@ -117,18 +117,17 @@ Control4=IDC_CENTROID,button,1342242816
 Control5=IDC_RADIO1,button,1342177289
 Control6=IDC_RADIO2,button,1342177289
 Control7=IDC_SEA,button,1342242816
-Control8=IDC_Edge,button,1342242816
+Control8=IDC_STATIC,button,1342177287
 Control9=IDC_STATIC,button,1342177287
-Control10=IDC_STATIC,button,1342177287
-Control11=IDC_TOP,button,1342242816
-Control12=IDC_BOTTOM,button,1342242816
-Control13=IDC_LEFT,button,1342242816
-Control14=IDC_RIGHT,button,1342242816
-Control15=IDC_STATIC,button,1342177287
-Control16=IDC_PREWITT,button,1342242816
-Control17=IDC_ROBERT,button,1342242816
-Control18=IDC_SOBEL,button,1342242816
-Control19=IDC_CORELATION,button,1342242816
+Control10=IDC_TOP,button,1342242816
+Control11=IDC_BOTTOM,button,1342242816
+Control12=IDC_LEFT,button,1342242816
+Control13=IDC_RIGHT,button,1342242816
+Control14=IDC_STATIC,button,1342177287
+Control15=IDC_PREWITT,button,1342242816
+Control16=IDC_ROBERT,button,1342242816
+Control17=IDC_SOBEL,button,1342242816
+Control18=IDC_EDGE,button,1342242816
 
 [TB:IDR_MAINFRAME]
 Type=1

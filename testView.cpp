@@ -32,15 +32,14 @@ BEGIN_MESSAGE_MAP(CTestView, CFormView)
 	ON_BN_CLICKED(IDC_RADIO1, OnRadio1)
 	ON_BN_CLICKED(IDC_RADIO2, OnRadio2)
 	ON_BN_CLICKED(IDC_SEA, OnButton1)
-	ON_BN_CLICKED(IDC_Edge, OnEdge)
 	ON_BN_CLICKED(IDC_TOP, OnTop)
 	ON_BN_CLICKED(IDC_LEFT, OnLeft)
 	ON_BN_CLICKED(IDC_RIGHT, OnRight)
 	ON_BN_CLICKED(IDC_BOTTOM, OnBottom)
 	ON_BN_CLICKED(IDC_SOBEL, OnSobel)
-	ON_BN_CLICKED(IDC_CORELATION, OnCorelation)
 	ON_BN_CLICKED(IDC_PREWITT, OnPrewitt)
 	ON_BN_CLICKED(IDC_ROBERT, OnRobert)
+	ON_BN_CLICKED(IDC_CROSSCORELATION, OnCrosscorelation)
 	//}}AFX_MSG_MAP
 	// Standard printing commands
 	ON_COMMAND(ID_FILE_PRINT, CFormView::OnFilePrint)
@@ -327,175 +326,155 @@ void CTestView::OnRadio2() //for adaptive thresholding using integral images
 {
 
 	FILE * fp3=fopen("checking.txt","w+");
-	temp2=(PBYTE)LocalAlloc(LPTR,bm.bmHeight*bm.bmWidth); //temp2 for holding the integral sum
-	int s=3;
+	FILE * fp9=fopen("grayvalue.txt","w+");
+	PBYTE temp2;
+	const int constant=bm.bmWidth;
+	unsigned long *intImg=(unsigned long *)malloc(sizeof(unsigned long)*bm.bmHeight*bm.bmWidth);\
+
+	temp2=(PBYTE)LocalAlloc(LPTR,bm.bmHeight*bm.bmWidth);
+	
+	
 	int i=0,j=0;
 	for(i=0;i<bm.bmHeight;i++)
 	{
 		for(j=0;j<bm.bmWidth;j++)
 		{
-			if(i==0 && j==0)
+			fprintf(fp9,"%d\t",imagearray[i*bm.bmWidth+j]);
+		}
+		fprintf(fp9,"\n");
+	}
+
+	for(i=0;i<bm.bmHeight;i++)
+	{
+		for(j=0;j<bm.bmWidth;j++)
+		{
+			temp2[i*bm.bmWidth+j]=imagearray[i*bm.bmWidth+j];
+		}
+	}
+	int sum=0;
+	for(i=0;i<bm.bmHeight;i++)
+	{
+		sum=0;
+		for(j=0;j<bm.bmWidth;j++)
+		{
+			sum+=temp2[i*bm.bmWidth+j];
+			if(i==0)
 			{
-				temp2[i*bm.bmWidth+j]=imagearray[i*bm.bmWidth+j];
-				fprintf(fp3,"%d ",temp2[i*bm.bmWidth+j]);
-				continue;
-			}
-			else if(i==0)
-			{
-				temp2[i*bm.bmWidth+j]=imagearray[i*bm.bmWidth+j]+temp2[i*bm.bmWidth+(j-1)];
-			}
-			else if(j==0)
-			{
-				temp2[i*bm.bmWidth+j]=imagearray[i*bm.bmWidth+j]+temp2[(i-1)*bm.bmWidth+j];
+				intImg[i*bm.bmWidth+j]=sum;
 			}
 			else
 			{
-				temp2[i*bm.bmWidth+j]=imagearray[i*bm.bmWidth+j]+temp2[i*bm.bmWidth+(j-1)]+temp2[(i-1)*bm.bmWidth+j]-temp2[(i-1)*bm.bmWidth+(j-1)];
+			intImg[i*bm.bmWidth+j]=intImg[(i-1)*bm.bmWidth+j]+sum;
 			}
-			fprintf(fp3,"%d ",temp2[i*bm.bmWidth+j]);
+			
+			fprintf(fp3,"%d\t",intImg[i*bm.bmWidth+j]);
 		}
 		fprintf(fp3,"\n");
 	}
 	temp3=(PBYTE)LocalAlloc(LPTR,bm.bmHeight*bm.bmWidth); //temp3 for the output of the adpative threshold
-	for(i=1;i<bm.bmHeight-1;i++)
+	FILE * fp10=fopen("checking_new.txt","w+");
+	int s=(int)bm.bmWidth/2;
+	for(i=0;i<bm.bmHeight;i++)
 	{
-		for(j=1;j<bm.bmWidth-1;j++)
+		for(j=0;j<bm.bmWidth;j++)
 		{
 			int sum=0;
-			sum=0;
-			int x1=i-(1);
-			int x2=i+(1);
-			int y1=j-1;
-			int y2=j+1;
-			
-			if((x1-1)<0 || y2>=bm.bmWidth)
-				sum+=0;
-			else
-			sum-=temp2[(x1-1)*bm.bmWidth+y2];
+			int x1=i-s/2;
+			int x2=i+s/2;
+			int y1=j-s/2;
+			int y2=j+s/2;
+			sum=intImg[x2*bm.bmWidth+y2]-intImg[x2*bm.bmWidth+y1]-intImg[(x1)*bm.bmWidth+y2]+intImg[(x1)*bm.bmWidth+(y1)];
 
-			if(x2> bm.bmHeight || (y1-1)<0)
-				sum+=0;
-			else 
-			sum-=temp2[(x2)*bm.bmWidth+(y1-1)];
-
-			if((x1-1)<0 || (y1-1)<0)
-				sum+=0;
-			else
-			sum+=temp2[(x1-1)*bm.bmWidth+(y1-1)];
-			sum*=85;
-
-			if(temp2[i*bm.bmWidth+j]*9 <=(int)(sum/100))
+			fprintf(fp10,"%d\t",sum);
+			int t=85;
+			int count=(x2-x1)*(y2-y1);
+			if(imagearray[i*bm.bmWidth+j]*count <(int)((sum*t)/100))
 			{
 				temp3[i*bm.bmWidth+j]=0;
 			}
 			else
 				temp3[i*bm.bmWidth+j]=255;
-			//fprintf(fp,"%d ",imagearray[i*bm.bmWidth+j]);
 		}
-		//fprintf(fp,"\n");
+		fprintf(fp10,"\n");
 	}
 	cmp.SetBitmapBits(bm.bmHeight*bm.bmWidth,temp3);
+	fclose(fp10);
+	free(intImg);
 	Invalidate();
 }
 
-void CTestView::OnButton1() 
+void CTestView::OnButton1()   ///SAD - Correlation -----------
 {
-	//FILE * fp4=fopen("hello.txt","w+");
-	temp4=(PBYTE)LocalAlloc(LPTR,bm.bmHeight*bm.bmWidth);
-	CFileDialog FileDlg(TRUE, "*", "*.*");
-	int height,width=0;
-	height=bm.bmHeight;
-	width=bm.bmWidth;
+	int height,width=0;	
+
+	FILE * fp10=fopen("grayvalue_actual.txt","w+");
 
 	CFileDialog FileDlg1(TRUE, "*", "*.*");
-
 	if( FileDlg1.DoModal ()==IDOK ) //for template image
-	{
-		//An HINSTANCE to the current instance of the application. If called from within a DLL linked with the USRDLL version of MFC, an HINSTANCE to the DLL is returned.
-		/* AfxGetInstanceHandle always returns the HINSTANCE of your executable file (.EXE) unless it is called from within a DLL linked with the USRDLL version of MFC. In this case, it returns an HINSTANCE to the DLL.
- */
-		HBITMAP hbmp=(HBITMAP)::LoadImage(AfxGetInstanceHandle(),FileDlg1.GetPathName(),IMAGE_BITMAP,0,0,LR_LOADFROMFILE|LR_CREATEDIBSECTION);
-		if(!hbmp)
+	{	
+		HBITMAP hbmp1=(HBITMAP)::LoadImage(AfxGetInstanceHandle(),FileDlg1.GetPathName(),IMAGE_BITMAP,0,0,LR_LOADFROMFILE|LR_CREATEDIBSECTION);
+		if(!hbmp1)
 			MessageBox("incorrect image uplooaded");
 		else
 		{
-			if(cmp1.DeleteObject())
-				cmp1.Detach();
-			cmp1.Attach(hbmp);
-			cmp1.GetBitmap(&bm);
-			cmp1.GetBitmapBits(bm.bmHeight*bm.bmWidth,temp4);
+			if(cmp.DeleteObject())
+				cmp.Detach();
+			cmp1.Attach(hbmp1);
+			cmp1.GetBitmap(&bm1);
+			temp4=(PBYTE)LocalAlloc(LPTR,bm1.bmHeight*bm1.bmWidth);//allocating memory
+			cmp1.GetBitmapBits(bm1.bmHeight*bm1.bmWidth,temp4);
 		}
-		/*fprintf(fp4,"%d\t",bm.bmHeight);
-		fprintf(fp4,"%d",bm.bmWidth);
-		fprintf(fp4,"\n");*/
-		/*CClientDC dc(this);
-		CDC dcMem;
-		dcMem.CreateCompatibleDC(&dc);
-		dcMem.SelectObject(&cmp1);
-		dc.StretchBlt(0,0, (bm.bmWidth), (bm.bmHeight), &dcMem, 0, 0, bm.bmWidth, bm.bmHeight, SRCCOPY);*/
+		cmp1.SetBitmapBits(bm1.bmHeight*bm1.bmWidth,temp4);
 	}
-	int i=0,j=0;
-	for( i=0;i<bm.bmHeight;i++)	
-		{
-		  for(j=0;j<bm.bmWidth;j++)
-			{
-			    int a=temp4[i*bm.bmWidth+j];
-				if(a>200)
-					temp4[i*bm.bmWidth+j]=0;
-				else
-					temp4[i*bm.bmWidth+j]=255;
-			}
-		}
-	 cmp1.SetBitmapBits(bm.bmHeight*bm.bmWidth,temp4);
 	
-	int sad=INT_MAX;
+	height=bm1.bmHeight;
+	width=bm1.bmWidth;
+
+
+	int SAD,isor=0 ,iref=0;
+	SAD = 0;
+	int sad_max=INT_MAX;
+		
 	int xcor=0,ycor=0;
-	for(i=0;i<height-bm.bmHeight;i++)
+	for(int i=0;i<= bm.bmHeight-height;i++)
 	{
-		for(j=0;j<width-bm.bmWidth;j++)
+		for(int j=0;j<= bm.bmWidth-width;j++)
 		{
-			int c=0;
-			for(int k=0;k<bm.bmHeight;k++)
+			SAD=0;
+
+			for(int k=0;k<bm1.bmHeight;k++)
 			{
-				for(int l=0;l<bm.bmWidth;l++)
+				for(int l=0;l<bm1.bmWidth;l++)
 				{
-					c+=abs(imagearray[(i+k)*width+(l+j)]-temp4[k*bm.bmWidth+l]);// for storing the sad values
-					//fprintf(fp4,"%d",c);
+					int a=imagearray[(i+k)*bm.bmWidth+(l+j)];
+					int b=temp4[k*bm1.bmWidth+l];
+					SAD+=abs(a-b);
 				}
-				//fprintf(fp4,"\n");
 			}
-			if(c<sad)
+			if(SAD<sad_max)
 			{
-				sad=c;
-				xcor=i;
-				ycor=j;
+				sad_max=SAD;
+				xcor=j;
+				ycor=i;
 			}
 		}
 	}
-	
-	//fprintf(fp4,"%d\t",xcor);
-	//fprintf(fp4,"%d",ycor);
-	CClientDC dc(this);
-	CDC dcMem;
-	dcMem.CreateCompatibleDC(&dc);
-	dcMem.SelectObject(&cmp1);
-	dc.BitBlt(xcor, ycor, bm.bmWidth, bm.bmHeight, &dcMem, 0, 0, SRCCOPY);
+
+
+	CClientDC dc1(this);
+	CDC dcMem1;
+	dcMem1.CreateCompatibleDC(&dc1);
+	dcMem1.SelectObject(&cmp1);
+	dc1.BitBlt(xcor, ycor, bm1.bmWidth, bm1.bmHeight, &dcMem1, 0, 0, SRCCOPY);
+	Ellipse(dc1, xcor, ycor, xcor+10, ycor+10);
 	char buffer [50];
-	sprintf (buffer, "sad value is %d", sad);
-	dc.TextOut(bm.bmWidth+100,bm.bmHeight+100,buffer);
-	//Ellipse(dc, xcor, ycor, xcor+10, ycor+10);
+	sprintf (buffer, "sad value is %d", sad_max);
+	dc1.TextOut(bm1.bmWidth+100,bm1.bmHeight+100,buffer);	
 }
 
 void CTestView::OnEdge() 
 {
-	for(int i=0;i<bm.bmHeight;i++)
-	{
-		for(int j=0;j<bm.bmWidth;j++)
-		{
-			
-		}
-	}
-		
+	MessageBox("nothing here");	
 }
 
 void CTestView::OnTop() 
@@ -676,16 +655,7 @@ void CTestView::OnSobel()
 
 }
 
-void CTestView::OnCorelation() 
-{
-	for(int i=0;i<bm.bmHeight;i++)
-	{
-		for(int j=0;j<bm.bmWidth;j++)
-		{
-			
-		}
-	}
-}
+
 
 void CTestView::OnPrewitt() 
 {
@@ -733,6 +703,161 @@ void CTestView::OnPrewitt()
 
 void CTestView::OnRobert() 
 {
-	// TODO: Add your control notification handler code here
+	temp4=(PBYTE)LocalAlloc(LPTR,bm.bmHeight*bm.bmWidth);
+	int i=0,j=0;
+	for(i=0;i<bm.bmHeight;i++)
+	{
+		for(j=0;j<bm.bmWidth;j++)
+		{
+			temp4[i*bm.bmWidth+j]=imagearray[i*bm.bmWidth+j];
+		}
+	}
+	int gx[2][2] = {  
+   {1,0} ,   
+   { 0, -1}   
+	};//for horizontal
+	int gy[2][2] = {  
+   {0,1} ,   
+   {-1,0}};  //for vertical
+	int pix=0,piy=0;
+	for(i=0;i<=bm.bmHeight-2;i++)
+	{
+		for(j=0;j<=bm.bmWidth-2;j++)
+		{
+			pix=abs(imagearray[i*bm.bmWidth+j]-imagearray[(i+1)*bm.bmWidth+(j+1)])+abs(imagearray[i*bm.bmWidth+j+1]-imagearray[(i+1)*bm.bmWidth+j]);
+			temp4[i*bm.bmWidth+j]=pix;
+			
+		}
+	}
+	cmp.SetBitmapBits(bm.bmHeight*bm.bmWidth,temp4);
+	Invalidate();
+}
+
+void CTestView::OnCrosscorelation() 
+{
+	FILE *fp16=fopen("checking_correlation.txt","w+");
 	
+	int i=0,j=0;
+	int height=bm.bmHeight;
+	int width=bm.bmWidth;
+	/*for(i=0;i<bm.bmHeight;i++)
+	{
+		for(j=0;j<bm.bmWidth;j++)
+		{
+			if(imagearray[i*bm.bmWidth+j]>90)
+			{
+				imagearray[i*bm.bmWidth+j]=255;
+			}
+			else
+				imagearray[i*bm.bmWidth+j]=0;
+		}
+	}*/
+	CFileDialog FileDlg1(TRUE, "*", "*.*");
+
+	if( FileDlg1.DoModal ()==IDOK ) //for template image
+	{
+		HBITMAP hbmp=(HBITMAP)::LoadImage(AfxGetInstanceHandle(),FileDlg1.GetPathName(),IMAGE_BITMAP,0,0,LR_LOADFROMFILE|LR_CREATEDIBSECTION);
+		if(!hbmp)
+			MessageBox("incorrect image uplooaded");
+		else
+		{
+			if(cmp.DeleteObject())
+				cmp.Detach();
+			cmp.Attach(hbmp);
+			cmp.GetBitmap(&bm);
+			temp4=(PBYTE)LocalAlloc(LPTR,bm.bmHeight*bm.bmWidth);
+			cmp.GetBitmapBits(bm.bmHeight*bm.bmWidth,temp4);
+		}
+	}
+	/*for(i=0;i<bm.bmHeight;i++)
+	{
+		for(j=0;j<bm.bmWidth;j++)
+		{
+			if(temp4[i*bm.bmWidth+j]>90)
+			{
+				temp4[i*bm.bmWidth+j]=255;
+			}
+			else
+				temp4[i*bm.bmWidth+j]=0;
+		}
+	}*/
+
+	cmp.SetBitmapBits(bm.bmHeight*bm.bmWidth,temp4);
+	int xcor=0,ycor=0;
+	
+	int lambda=INT_MIN;
+	int meanbig=0,meansmall=0,sumnum=1,sumdenbig=1,sumdensmall=1,avgbig=0;
+	int temp10=0;
+
+	for(i=0;i<bm.bmHeight;i++)
+	{
+		for(j=0;j<bm.bmWidth;j++)
+		{
+			meansmall+=temp4[i*bm.bmWidth+j];
+		}
+	}
+	meansmall/=(bm.bmHeight*bm.bmWidth);//the template image mean is always constant throught the process.
+
+	for(i=0;i<=height-bm.bmHeight;i++)
+	{
+		for(j=0;j<=width-bm.bmWidth;j++)
+		{
+			sumnum=sumdenbig=sumdensmall=1;
+			meanbig=0;
+			temp10=1;
+			for(int y=0;y<bm.bmHeight;y++)
+			{
+				for(int z=0;z<bm.bmWidth;z++)
+				{
+					meanbig+=imagearray[(i+y)*width+(j+z)];
+				}
+			}
+			avgbig=meanbig/(bm.bmHeight*bm.bmWidth);//the bigger image mean.
+		sumnum=0;
+		sumdenbig=0;
+		sumdensmall=0;
+		for(y=0;y<bm.bmHeight;y++)
+		{
+			for(int z=0;z<bm.bmWidth;z++)
+			{
+				temp10=1;
+				temp10*=(imagearray[(i+y)*width+(j+z)]-avgbig);
+				temp10*=(temp4[y*bm.bmWidth+z]-meansmall);
+				sumnum+=temp10;//adding in the numerator.
+				sumdenbig+=(imagearray[(i+y)*width+(j+z)]-avgbig)*(imagearray[(i+y)*width+(j+z)]-meanbig);
+				sumdensmall+=(temp4[y*bm.bmWidth+z]-meansmall)*(temp4[y*bm.bmWidth+z]-meansmall);
+
+			}
+		}
+		sumdenbig=sumdenbig*sumdensmall;
+		sumdenbig=sqrt(sumdenbig);
+		if(sumdenbig!=0)
+		sumnum=sumnum/sumdenbig;
+		else
+			sumnum=100;
+		if(sumnum>lambda)
+		{
+			lambda=sumnum;
+			xcor=i;
+			ycor=j;
+		}
+		fprintf(fp16,"%d\t",lambda);
+	}
+
+
+	}
+	
+	cmp.SetBitmapBits(bm.bmHeight*bm.bmWidth,temp4);
+	CClientDC dc(this);
+	fclose(fp16);
+	fp16=fopen("checking_value.txt","w");
+	fprintf(fp16,"%d\t",xcor);
+	fprintf(fp16,"%d\t",ycor);
+	fclose(fp16);
+	CDC dcMem;
+	dcMem.CreateCompatibleDC(&dc);
+	dcMem.SelectObject(&cmp);
+	//dc.BitBlt(xcor, ycor, bm1.bmWidth, bm1.bmHeight, &dcMem, 0, 0, SRCCOPY);
+	Ellipse(dc,xcor,ycor,xcor+10,ycor+10);
+	MessageBox("hello world");
 }
